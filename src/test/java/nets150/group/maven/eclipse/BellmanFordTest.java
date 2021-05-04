@@ -2,10 +2,6 @@ package nets150.group.maven.eclipse;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertNull;
-
-import java.awt.List;
-import java.util.ArrayList;
-
 import org.junit.Before;
 import org.junit.Test;
 
@@ -25,7 +21,7 @@ public class BellmanFordTest {
 
     @Test
     public void testGetNegativePath() {
-        BellmanFord bf = new BellmanFord(g);
+        BellmanFord bf = new BellmanFord(g, 1.0);
         bf.run(0);
         Object[] expected = new Object[] { 1, 2, 3, 0, 1 };
         Object[] path = bf.getNegativeCycles().toArray();
@@ -35,7 +31,7 @@ public class BellmanFordTest {
     @Test
     public void testGetNegativePathMultipleCycles() {
         g.addEdge(0, 2, -6, true);
-        BellmanFord bf = new BellmanFord(g);
+        BellmanFord bf = new BellmanFord(g, 1.0);
         bf.run(0);
         Object[] expected = new Object[] { 2, 3, 0, 2 };
         Object[] path = bf.getNegativeCycles().toArray();
@@ -45,7 +41,7 @@ public class BellmanFordTest {
     @Test
     public void testGetNegativePathMultipleCycles2() {
         g.addEdge(0, 2, 6, true);
-        BellmanFord bf = new BellmanFord(g);
+        BellmanFord bf = new BellmanFord(g, 1.0);
         bf.run(0);
         Object[] expected = new Object[] { 1, 2, 0, 1 };
         Object[] path = bf.getNegativeCycles().toArray();
@@ -56,7 +52,7 @@ public class BellmanFordTest {
     public void testGetNegativePathNoCycle() {
         g.addEdge(0, 2, 6, true);
         g.addEdge(0, 1, 3, true);
-        BellmanFord bf = new BellmanFord(g);
+        BellmanFord bf = new BellmanFord(g, 1.0);
         bf.run(0);
         assertNull(bf.getNegativeCycles());
     }

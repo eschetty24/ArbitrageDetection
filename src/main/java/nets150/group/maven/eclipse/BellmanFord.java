@@ -2,7 +2,6 @@ package nets150.group.maven.eclipse;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,22 +11,19 @@ public class BellmanFord {
     private double[] distance;
     private int[] parent;
     private boolean visited[];
-    public Map<Integer, Double>[] potentials; 
+    public Map<Integer, Double>[] potentials;
     public double closestDiff = Integer.MAX_VALUE;
-    public int closestV1; 
-    public int closestV2; 
-    
-    public double threshold = 1; 
+    public int closestV1;
+    public int closestV2;
 
-    public BellmanFord(Graph g) {
+    public double threshold;
+
+    public BellmanFord(Graph g, Double threshold) {
         this.g = g;
+        this.threshold = 1;
         distance = new double[g.getSize()];
         parent = new int[g.getSize()];
         visited = new boolean[g.getSize()];
-        potentials = new HashMap[g.getSize()]; 
-        for (int i = 0; i < potentials.length; i++) {
-            potentials[i] = new HashMap<Integer, Double>(); 
-        }
         initDist(g);
         initParent(g);
     }
@@ -43,46 +39,28 @@ public class BellmanFord {
                         distance[v] = (distance[u] + g.getWeight(u, v));
 
                         parent[v] = u;
-                        //System.out.println("parent: " + u + "child: " + v);
                     }
                 }
             }
         }
     }
 
-    private double findProximity(int u, int v) {
-        return (distance[u] + g.getWeight(u, v)) - distance[v];
-    }
-
-    private void printDistances() {
-        for (double d : distance) {
-            System.out.println(d);
-        }
-    }
-
-    public int getNegativeCycleSource() { 
-        
-        for (int i = 0; i < parent.length; i++) {
-            //System.out.println("child: " + i + " parent: " + parent[i]);
-        }
-        
+    public int getNegativeCycleSource() {
         for (int u = 0; u < g.getSize(); u++) {
             for (int v : g.outNeighbors(u)) {
                 double diff = ((distance[u] + g.getWeight(u, v)) - distance[v]);
                 if (diff != 0 && diff > 0 && diff < closestDiff) {
-                    closestDiff = diff; 
-                    closestV1 = u; 
-                    closestV2 = v; 
-                    
+                    closestDiff = diff;
+                    closestV1 = u;
+                    closestV2 = v;
+
                 }
                 if (distance[u] != Integer.MAX_VALUE
-                        && (distance[u] + g.getWeight(u, v)) + threshold < distance[v]) { 
+                        && (distance[u] + g.getWeight(u, v)) + threshold < distance[v]) {
                     return v;
                 }
             }
         }
-        
-        
 
         return -1;
     }
@@ -95,20 +73,18 @@ public class BellmanFord {
     }
 
     public List<Integer> getNegativeCycles() {
-        int source = getNegativeCycleSource(); 
+        int source = getNegativeCycleSource();
         if (source == -1) {
             return null;
         }
 
         List<Integer> path = new ArrayList<>();
         path.add(source);
-        System.out.println(source);
         visited[source] = true;
         int curr = parent[source];
         while (curr != source) {
-            System.out.println(curr);
             if (visited[curr]) {
-                
+
                 path.add(curr);
                 path = trimPath(curr, path);
                 Collections.reverse(path);

@@ -1,27 +1,17 @@
 
 package nets150.group.maven.eclipse;
 
-import java.io.Console;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.net.URI;
 
 import java.net.URISyntaxException;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
-
 import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
-import kong.unirest.json.JSONObject;
 
 /**
  * This example demonstrates how to create a websocket connection to a server.
@@ -33,8 +23,9 @@ public class App {
     private static Graph g;
 
     private static String[] altKeys = { "c2889aaad3i8rjpavj20", "c283sd2ad3i8rjpap4cg" };
+    private static String webSocketApiKey = "c28qk5qad3if6b4c2p3g";
     private static int swapNum = 0;
-
+    private static Map<String, Integer> currencyMap;
     // Storing valid currencies to limit number of calls to API, as there is a
     // limit.
     private static String[] currencies = ("AED\n" + "AFN\n" + "ALL\n" + "AMD\n" + "ANG\n" + "AOA\n"
@@ -60,10 +51,6 @@ public class App {
             + "XAU\n" + "XCD\n" + "XDR\n" + "XOF\n" + "XPF\n" + "YER\n" + "ZAR\n" + "ZMK\n"
             + "ZMW\n" + "ZWL").split("\n");
 
-    /*
-     * Finnhub API limits 60 calls per second. Signed up for second account to get
-     * multiple API keys lol :).
-     */
     private static void swapApiKeys() {
         try {
             String key = altKeys[swapNum];
@@ -73,6 +60,7 @@ public class App {
         } catch (ArrayIndexOutOfBoundsException e) {
             System.out
                     .println("API keys need to cool down. Please try again in a couple of minutes");
+            System.exit(0);
         }
 
     }
@@ -85,7 +73,8 @@ public class App {
 
             rates.add(raw.getBody().getObject().getJSONObject("quote").toMap());
         } catch (kong.unirest.json.JSONException e) {
-            System.out.println("HAD TO SWAP");
+            System.out.println("Current API key too hot... swapping for new one.");
+            System.out.println("\n");
             swapApiKeys();
             getForexRatesForBase(base);
         }
@@ -98,6 +87,10 @@ public class App {
     }
 
     private static void buildGraph() {
+        System.out.println("Please wait...");
+        System.out.println("\n");
+        System.out.println("Building Graph...");
+        System.out.println("\n");
         for (int i = 0; i < currencies.length; i++) {
             getForexRatesForBase(currencies[i]);
             Object[] exchanges = rates.get(i).values().toArray();
@@ -112,63 +105,122 @@ public class App {
             }
 
         }
-        System.out.println("total edges " + Graph.totalEdges);
+        System.out.println("Total edges added: " + Graph.totalEdges);
+        System.out.println("\n");
     }
 
     private static double getProfit(List<Integer> path) {
         double profit = 0;
         for (int i = 0; i < path.size() - 1; i++) {
-            System.out.println((-1 * (g.getWeight(path.get(i), path.get(i + 1))) + "+"));
             profit += -1 * (g.getWeight(path.get(i), path.get(i + 1)));
         }
-        System.out.println("profit: " + profit);
+        profit = Math.abs((1 - profit)) * 100;
         return profit;
     }
 
-    private static void getCharts(WebSocketClientEndpoint ws, String curr1, String curr2) {
+    private static void getCharts(WebSocketClientEndpoint ws, List<String> curr) {
         ws.connect();
         while (!(ws.isOpen())) {
-            ; //hang 
+            ; // hang
         }
-        String msg = "{\"type\":\"subscribe\",\"symbol\":\"USD\"}";
-        ws.send(msg);
+        for (String c : curr) {
+            String r = "{\"type\":\"subscribe\",\"symbol\":" + "\"" + c + "\"" + "}";
+            System.out.println(r);
+            ws.send(r);
+        }
+    }
+
+    private static void buildCurrencyMap() {
+        currencyMap = new HashMap<String, Integer>();
+        for (int i = 0; i < currencies.length; i++) {
+            currencyMap.put(currencies[i], i);
+        }
+    }
+
+    private static void addCustomExchanges(String[] data) {
+        buildCurrencyMap();
+        int u = currencyMap.get(data[0]);
+        int v = currencyMap.get(data[1]);
+        double weight = calcWeight(Double.parseDouble(data[2]));
+        g.addEdge(u, v, weight, false);
     }
 
     public static void main(String[] args) throws URISyntaxException {
 
         Unirest.config().defaultBaseUrl("https://finnhub.io/api/v1")
-                .setDefaultHeader("X-Finnhub-Token", "c20ra02ad3iec96dij7g");
+                .setDefaultHeader("X-Finnhub-Token", webSocketApiKey);
 
         WebSocketClientEndpoint ws = new WebSocketClientEndpoint(
                 new URI("wss://ws.finnhub.io?token=c20ra02ad3iec96dij7g"));
-         
+
         g = new Graph(currencies.length);
         buildGraph();
-        BellmanFord bf = new BellmanFord(g);
+        Scanner s = new Scanner(System.in);
+        System.out.println(
+                "Please enter a threshold. The threshold is defined as the minimum percentage increase for an arbitrage opportunity to be recognized. (Recommended 1% where input 1 = 1%)");
+        Double threshold = Double.parseDouble(s.nextLine());
+        BellmanFord bf = new BellmanFord(g, threshold);
+
+        System.out.println("Do you wish to enter any custom exchange rates?(y/n)");
+        if (s.nextLine().equals("y")) {
+            System.out.println("How many new exchange rates do you wish to add?");
+            int length = Integer.parseInt(s.nextLine());
+            System.out.println(
+                    "Ex. enter the input as USD,AUD,0.57 to change the exchange rate between USD/AUD to 0.57. Any other format will be rejected");
+            for (int i = 0; i < length; i++) {
+                String[] raw = s.nextLine().split(",");
+                addCustomExchanges(raw);
+            }
+        }
+
         bf.run(0);
 
         List<Integer> path = bf.getNegativeCycles();
         if (path == null) {
-            System.out.println("No current arbitrage");
+            System.out.println("No current arbitrage \n");
             String curr1 = currencies[bf.closestV1];
             String curr2 = currencies[bf.closestV2];
             System.out.println("Best opportunity is " + curr1 + "->" + curr2
-                    + " if exchange rate drops " + bf.closestDiff);
+                    + " if exchange rate drops " + bf.closestDiff + "\n");
 
-            Scanner s = new Scanner(System.in);
-            String yes = "Do you wish to get realtime quotes for " + curr1 + " and "
-                    + curr2 + "? (y/n)";
+            String yes = "Do you wish to get realtime trades for " + curr1 + " and " + curr2
+                    + "? (y/n)";
             System.out.println(yes);
             if (s.nextLine().equals("y")) {
-                getCharts(ws, curr1, curr2);
+                List<String> currencies = new ArrayList<String>();
+                currencies.add(curr1);
+                getCharts(ws, currencies);
+                System.out.println(
+                        "**Note that if the currency selected is not often traded, or markets are not currently open, there may be no active trades.**");
+            } else {
+                String other = "Do you wish to get realtime trades for any other foreign currencies/crypto/stocks? (y/n)";
+                System.out.println(other);
+                if (s.nextLine().equals("y")) {
+                    System.out.println(
+                            "**Note that if the currency selected is not often traded, or markets are not currently open, there may be no active trades.**");
+                    System.out.println(
+                            "Please enter a stock symbol ex. (AAPL), crypto symbol ex. (BINANCE:BTCUSDT), or currency symbol (USD)");
+                    List<String> currencies = new ArrayList<String>();
+                    currencies.add(s.nextLine());
+                    getCharts(ws, currencies);
+                    System.out.println("Enter \"q\" to quit");
+                    while (!(s.nextLine().equals("q"))) {
+                        ;
+                    }
+                    ws.close();
+                    System.exit(0);
+
+                }
             }
 
         } else {
+            System.out.println("ARBITRAGE FOUND");
+            System.out.println("\n");
             for (int i = 0; i < path.size() - 1; i++) {
                 System.out.println(currencies[path.get(i)] + "->" + currencies[path.get(i + 1)]
                         + " rates:" + rates.get(path.get(i)).get(currencies[path.get(i + 1)]));
             }
-            System.out.println("profit: " + getProfit(path));
+            System.out.println("profit: " + getProfit(path) + "%");
         }
 
     }
