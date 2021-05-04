@@ -13,10 +13,6 @@ import kong.unirest.HttpResponse;
 import kong.unirest.JsonNode;
 import kong.unirest.Unirest;
 
-/**
- * This example demonstrates how to create a websocket connection to a server.
- * Only the most important callbacks are overloaded.
- */
 public class App {
 
     private static List<Map<String, Object>> rates = new ArrayList<>();
@@ -26,6 +22,7 @@ public class App {
     private static String webSocketApiKey = "c28qk5qad3if6b4c2p3g";
     private static int swapNum = 0;
     private static Map<String, Integer> currencyMap;
+    
     // Storing valid currencies to limit number of calls to API, as there is a
     // limit.
     private static String[] currencies = ("AED\n" + "AFN\n" + "ALL\n" + "AMD\n" + "ANG\n" + "AOA\n"
