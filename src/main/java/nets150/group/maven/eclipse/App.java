@@ -143,6 +143,20 @@ public class App {
     }
 
     public static void main(String[] args) throws URISyntaxException {
+        
+        String title = "\n"
+                + "  ___       _     _ _                         ______     _            _             \n"
+                + " / _ \\     | |   (_) |                        |  _  \\   | |          | |            \n"
+                + "/ /_\\ \\_ __| |__  _| |_ _ __ __ _  __ _  ___  | | | |___| |_ ___  ___| |_ ___  _ __ \n"
+                + "|  _  | '__| '_ \\| | __| '__/ _` |/ _` |/ _ \\ | | | / _ \\ __/ _ \\/ __| __/ _ \\| '__|\n"
+                + "| | | | |  | |_) | | |_| | | (_| | (_| |  __/ | |/ /  __/ ||  __/ (__| || (_) | |   \n"
+                + "\\_| |_/_|  |_.__/|_|\\__|_|  \\__,_|\\__, |\\___| |___/ \\___|\\__\\___|\\___|\\__\\___/|_|   \n"
+                + "                                   __/ |                                            \n"
+                + "                                  |___/                                             \n"
+                + "                                                                                    \n"                                                                                               
+                + "Written by: Nolan Biscaro, Elyse Schetty, and Baptiste Audenaert \n";
+        System.out.println(title + "\n");
+        
 
         Unirest.config().defaultBaseUrl("https://finnhub.io/api/v1")
                 .setDefaultHeader("X-Finnhub-Token", webSocketApiKey);
