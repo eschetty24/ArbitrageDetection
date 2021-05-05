@@ -50,7 +50,6 @@ public class BellmanFord {
             for (int v : g.outNeighbors(u)) {
                 double diff = ((distance[u] + g.getWeight(u, v)) - distance[v]);
                 if (diff != 0 && diff > 0 && diff < closestDiff) {
-                    closestDiff = diff;
                     closestV1 = u;
                     closestV2 = v;
 

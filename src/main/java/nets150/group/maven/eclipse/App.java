@@ -107,11 +107,12 @@ public class App {
     }
 
     private static double getProfit(List<Integer> path) {
-        double profit = 0;
+        double profit = 1;
         for (int i = 0; i < path.size() - 1; i++) {
-            profit += -1 * (g.getWeight(path.get(i), path.get(i + 1)));
+            String d = rates.get(path.get(i)).get(currencies[path.get(i + 1)]).toString();
+            profit *= (-1 * (Double.valueOf(d).doubleValue()));
         }
-        profit = Math.abs((1 - profit)) * 100;
+        profit = Math.abs((profit - 1)) * 100;
         return profit;
     }
 
@@ -140,6 +141,7 @@ public class App {
         int v = currencyMap.get(data[1]);
         double weight = calcWeight(Double.parseDouble(data[2]));
         g.addEdge(u, v, weight, false);
+        rates.get(u).put(currencies[v], data[2]);
     }
 
     public static void main(String[] args) throws URISyntaxException {
