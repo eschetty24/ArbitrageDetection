@@ -204,15 +204,15 @@ public class App {
                 currencies.add(curr1);
                 getCharts(ws, currencies);
                 System.out.println(
-                        "**Note that if the currency selected is not often traded, or markets are not currently open, there may be no active trades.**");
+                        "**Note that if the stock selected is not often traded, or markets are not currently open, there may be no active trades.**");
             } else {
-                String other = "Do you wish to get realtime trades for any other foreign currencies/crypto/stocks? (y/n)";
+                String other = "Do you wish to get realtime trades for any other foreign crypto or stocks? (y/n)";
                 System.out.println(other);
                 if (s.nextLine().equals("y")) {
                     System.out.println(
-                            "**Note that if the currency selected is not often traded, or markets are not currently open, there may be no active trades.**");
+                            "**Note that if the stock selected is not often traded, or markets are not currently open, there may be no active trades.**");
                     System.out.println(
-                            "Please enter a stock symbol ex. (AAPL), crypto symbol ex. (BINANCE:BTCUSDT), or currency symbol (USD)");
+                            "Please enter a stock symbol ex. (AAPL) or crypto symbol ex. (BINANCE:BTCUSDT)");
                     List<String> currencies = new ArrayList<String>();
                     currencies.add(s.nextLine());
                     getCharts(ws, currencies);
