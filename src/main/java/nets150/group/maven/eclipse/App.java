@@ -195,7 +195,7 @@ public class App {
             String curr2 = currencies[bf.closestV2];
             System.out.println("Best opportunity is " + curr1 + "->" + curr2
                     + " if exchange rate drops " + bf.closestDiff + "\n");
-
+           /*
             String yes = "Do you wish to get realtime trades for " + curr1 + " and " + curr2
                     + "? (y/n)";
             System.out.println(yes);
@@ -205,6 +205,7 @@ public class App {
                 getCharts(ws, currencies);
                 System.out.println(
                         "**Note that if the stock selected is not often traded, or markets are not currently open, there may be no active trades.**");
+            */
             } else {
                 String other = "Do you wish to get realtime trades for any other foreign crypto or stocks? (y/n)";
                 System.out.println(other);
