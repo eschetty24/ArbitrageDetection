@@ -205,8 +205,9 @@ public class App {
                 getCharts(ws, currencies);
                 System.out.println(
                         "**Note that if the stock selected is not often traded, or markets are not currently open, there may be no active trades.**");
-            */
+           
             } else {
+             */
                 String other = "Do you wish to get realtime trades for any other foreign crypto or stocks? (y/n)";
                 System.out.println(other);
                 if (s.nextLine().equals("y")) {
@@ -225,7 +226,7 @@ public class App {
                     System.exit(0);
 
                 }
-            }
+            
 
         } else {
             System.out.println("ARBITRAGE FOUND");
